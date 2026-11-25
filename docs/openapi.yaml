@@ -1,5 +1,211 @@
-openapi: 3.0.0
+openapi: 3.0.3
+
 info:
   title: API Jeux Vidéo
   version: 1.0.0
-paths: {}
+  description: API de gestion d'une collection de jeux vidéo.
+
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /api/games:
+    get:
+      summary: Récupérer tous les jeux
+      description: Retourne la liste complète des jeux enregistrés.
+      responses:
+        '200':
+          description: Liste des jeux récupérée avec succès.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Game'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Ajouter un jeu
+      description: Crée un nouveau jeu à partir des données fournies.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGameInput'
+      responses:
+        '201':
+          description: Jeu créé avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/games/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identifiant du jeu.
+        schema:
+          type: integer
+
+    get:
+      summary: Récupérer un jeu
+      description: Retourne le jeu correspondant à l'identifiant fourni.
+      responses:
+        '200':
+          description: Jeu trouvé.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      summary: Modifier un jeu
+      description: Remplace les données du jeu correspondant à l'identifiant fourni.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGameInput'
+      responses:
+        '200':
+          description: Jeu modifié avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      summary: Supprimer un jeu
+      description: Supprime le jeu correspondant à l'identifiant fourni.
+      responses:
+        '204':
+          description: Jeu supprimé avec succès.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Game:
+      type: object
+      required:
+        - id
+        - title
+        - editor
+        - releaseYear
+        - genre
+        - rating
+      properties:
+        id:
+          type: integer
+          description: Identifiant du jeu généré par SQLite.
+          example: 1
+        title:
+          type: string
+          description: Titre du jeu.
+          example: The Legend of Zelda
+        editor:
+          type: string
+          description: Éditeur du jeu.
+          example: Nintendo
+        releaseYear:
+          type: integer
+          description: Année de sortie du jeu.
+          example: 1986
+        genre:
+          type: string
+          description: Genre du jeu.
+          example: Action-aventure
+        rating:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 10
+          description: Note du jeu sur 10.
+          example: 9.5
+
+    CreateGameInput:
+      type: object
+      required:
+        - title
+        - editor
+        - releaseYear
+        - genre
+        - rating
+      properties:
+        title:
+          type: string
+          example: The Legend of Zelda
+        editor:
+          type: string
+          example: Nintendo
+        releaseYear:
+          type: integer
+          example: 1986
+        genre:
+          type: string
+          example: Action-aventure
+        rating:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 10
+          example: 9.5
+
+  responses:
+    BadRequest:
+      description: Requête invalide ou données incorrectes.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Données invalides.
+
+    NotFound:
+      description: Jeu introuvable.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Jeu introuvable.
+
+    InternalServerError:
+      description: Erreur interne du serveur.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Erreur interne du serveur.
